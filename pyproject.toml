@@ -145,3 +145,10 @@ cmd = "python ./rhombusaitestapp/manage.py migrate"
 
 [tool.poe.tasks.manage]
 cmd = "python ./rhombusaitestapp/manage.py"
+
+[tool.coverage.run]
+omit = [
+    # Omit asgi and wsgi files.
+    "rhombusaitestapp/rhombusaitestapp/asgi.py",
+    "rhombusaitestapp/rhombusaitestapp/wsgi.py",
+]
