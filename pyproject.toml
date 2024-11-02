@@ -9,20 +9,30 @@ readme = "README.md"
 python = "^3.13"
 polars = "^1.12.0"
 django = "^5.1.2"
-django-types = "^0.19.1"
-django-stubs-ext = "^5.1.1"
+celery = "^5.4.0"
+redis = "^5.2.0"
+pytest-asyncio = "^0.24.0"
+pytest-django = "^4.9.0"
+django-ninja = "^1.3.0"
+django-cors-headers = "^4.3.1"
+celery-types = "^0.22.0"
+numpy = "^2.1.3"
+pandas = "^2.2.3"
+
 
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.3"
 pytest-django = "^4.9.0"
-ruff = "^0.7.1"
+ruff = "^0.7.2"
 pylint = "^3.3.1"
 pylint-django = "^2.6.1"
 pylint-per-file-ignores = "^1.3.2"
 mypy = "^1.13.0"
-django-stubs = "^5.1.1"
 pytest-cov = "^6.0.0"
+django-stubs = {extras = ["compatible-mypy"], version = "^5.1.1"}
+django-stubs-ext = "^5.1.1"
+django-types = "^0.19.1"
 
 [build-system]
 requires = ["poetry-core"]
@@ -39,13 +49,14 @@ exclude = [
     ".venv",
     ".vscode",
     "node_modules",
+    "migrations",
 ]
 line-length = 120
 indent-width = 4
 target-version = "py312"
 
 [tool.ruff.lint]
-ignore = ["ISC001", "D203", "D213", "TRY003", "EM101"]
+ignore = ["ISC001", "D203", "D213", "TRY003", "EM101", "ARG001", "EM102", "ANN401"]
 select = [
     "ANN", # flake8-annotations
     "ARG", # flake8-arguments
@@ -94,7 +105,7 @@ docstring-code-line-length = "dynamic"
 
 [tool.pylint.'MESSAGES CONTROL']
 max-line-length = 120
-disable = ["fixme", "too-many-arguments"]
+disable = ["fixme", "too-many-arguments", "too-many-return-statements", "too-few-public-methods"]
 load-plugins = ["pylint_per_file_ignores", "pylint_django"]
 django-settings-module = "rhombusaitestapp.settings"
 per-file-ignores = """
@@ -105,8 +116,19 @@ per-file-ignores = """
 """
 
 [tool.mypy]
-plugins = "mypy_django_plugin.main"
+plugins = ["mypy_django_plugin.main"]
 mypy_path = "./rhombusaitestapp"
+ignore_missing_imports = true
+no_implicit_optional = true
+check_untyped_defs = true
+exclude = [
+    'migrations/',
+    '.*/migrations/'
+]
+
+[[tool.mypy.overrides]]
+module = ["celery.*"]
+ignore_missing_imports = true
 
 [tool.django-stubs]
 django_settings_module = "rhombusaitestapp.settings"
