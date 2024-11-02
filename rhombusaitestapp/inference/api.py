@@ -1,38 +1,44 @@
 """API for the Inference app."""
 
-from urllib.request import Request
-
-from ninja import NinjaAPI, UploadedFile
+from django.http import HttpRequest
+from ninja import NinjaAPI, Schema, UploadedFile
+from ninja.errors import HttpError
 from ninja.responses import Response
 
-from .schemas import DataFileResponseSchema, FileUploadResponseSchema
+from .models import DataFile
+from .schemas import DataFileResponseSchema
 from .services import FileProcessingService
 
-# Create API with custom error handler
-api = NinjaAPI()
+# Initialize API
+api = NinjaAPI(urls_namespace="inference_api", version="1.0.0")
 service = FileProcessingService()
 
 
-@api.exception_handler(ValueError)
-def validation_error_handler(request: Request, exc: ValueError) -> Response:
-    """Convert ValueError to HTTP 422 response."""
-    return api.create_response(
-        request,
-        {"detail": str(exc)},
-        status=422,
-    )
+class FileUploadResponseSchema(Schema):
+    """File upload response schema."""
+
+    file_id: int
+    message: str
 
 
 @api.post("/upload", response={201: FileUploadResponseSchema})
 async def upload_file(
-    request: Request, file: UploadedFile = None
-) -> FileUploadResponseSchema:
+    request: HttpRequest,
+    file: UploadedFile,
+) -> Response:
     """Upload and queue file for processing."""
-    result = await service.handle_upload(file)
-    return 201, result
+    try:
+        result = await service.handle_upload(file)
+        return Response(
+            {"file_id": result.id, "message": "File uploaded successfully"}, status=201
+        )
+    except HttpError as e:
+        raise e from e
+    except Exception as e:
+        raise HttpError(500, str(e)) from e
 
 
 @api.get("/files/{file_id}", response=DataFileResponseSchema)
-def get_file_status(request: Request, file_id: int) -> DataFileResponseSchema:
+def get_file_status(request: HttpRequest, file_id: int) -> DataFile:
     """Get current processing status."""
     return service.get_status(file_id)

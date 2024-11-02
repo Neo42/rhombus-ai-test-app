@@ -1,23 +1,34 @@
 """Tasks for the Rhombus AI Test App."""
 
 from datetime import datetime
+from typing import Any
 
 import numpy as np
 import pandas as pd
-from celery import Celery, shared_task
+from celery import shared_task
+from celery.app.task import Task
 
 from .constants import ProcessingStatus
 from .inference_engine import InferenceEngine
 from .models import DataFile
 
+# Define a type alias for JSON-serializable types
+type JSONValue = dict[str, Any] | list[Any] | int | float | bool | str | None
 
-def make_serializable(
-    val: dict | list | int | float | bool | str | None,
-) -> dict | list | int | float | bool | str | None:
-    """Convert non-serializable types to JSON-serializable format."""
+
+def make_serializable(val: Any) -> JSONValue:
+    """Convert non-serializable types to JSON-serializable format.
+
+    Args:
+        val: Any value that needs to be converted to JSON-serializable format
+
+    Returns:
+        A JSON-serializable value
+
+    """
     match val:
         case dict():
-            return {k: make_serializable(v) for k, v in val.items()}
+            return {str(k): make_serializable(v) for k, v in val.items()}
         case list():
             return [make_serializable(v) for v in val]
         case np.integer():
@@ -31,7 +42,7 @@ def make_serializable(
         case pd.Timedelta() | np.timedelta64():
             return str(val) if not pd.isnull(val) else None
         case np.ndarray():
-            return val.tolist()
+            return val.tolist()  # type: ignore[attr-defined]
         case complex():
             return str(val)
         case _:
@@ -39,7 +50,7 @@ def make_serializable(
 
 
 @shared_task(bind=True, max_retries=3, autoretry_for=(Exception,), retry_backoff=True)
-def process_file(self: Celery, file_id: int) -> None:
+def process_file(self: Task, file_id: int) -> None:
     """Process file in background."""
     data_file = DataFile.objects.get(id=file_id)
     inference_engine = InferenceEngine()

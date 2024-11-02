@@ -31,7 +31,7 @@ class DataFile(models.Model):
     uploaded_at = models.DateTimeField(auto_now_add=True)
     processing_status = models.CharField(
         max_length=20,
-        choices=ProcessingStatus.choices,
+        choices=ProcessingStatus.choices(),
         default=ProcessingStatus.IDLE,
     )
     processing_time = models.FloatField(null=True, blank=True)

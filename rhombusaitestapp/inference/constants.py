@@ -1,7 +1,7 @@
 """Constants used throughout the inference app."""
 
 from enum import Enum
-from typing import ClassVar
+from typing import ClassVar, Self
 
 
 class ProcessingStatus(str, Enum):
@@ -16,12 +16,12 @@ class ProcessingStatus(str, Enum):
     INFERENCE_FAILED = "INFERENCE_FAILED"
 
     @classmethod
-    def choices(cls: "ProcessingStatus") -> list[tuple[str, str]]:
+    def choices(cls: type[Self]) -> list[tuple[str, str]]:
         """Return choices for Django model field."""
-        return [(status.value, status.display_name) for status in cls]
+        return [(status, status.display_name) for status in cls]
 
     @property
-    def display_name(self: "ProcessingStatus") -> str:
+    def display_name(self: Self) -> str:
         """Return human-readable status name."""
         return {
             self.IDLE: "Idle",
@@ -32,6 +32,18 @@ class ProcessingStatus(str, Enum):
             self.INFERRED: "Inference Complete",
             self.INFERENCE_FAILED: "Inference Failed",
         }[self]
+
+    @classmethod
+    def from_str(cls: type[Self], value: str) -> Self:
+        """Convert string to enum value."""
+        try:
+            return cls(value)
+        except ValueError as e:
+            raise ValueError(f"'{value}' is not a valid {cls.__name__}") from e
+
+    def __str__(self: Self) -> str:
+        """Return string representation."""
+        return self.value
 
 
 class HttpStatus(int, Enum):
@@ -49,7 +61,7 @@ class CacheConfig:
     KEY_PREFIX = "process_file_"
 
     @classmethod
-    def get_key(cls: "CacheConfig", file_id: int) -> str:
+    def get_key(cls: type[Self], file_id: int) -> str:
         """Generate cache key for a file."""
         return f"{cls.KEY_PREFIX}{file_id}"
 
@@ -103,7 +115,7 @@ class DataTypeConfig:
     ]
 
     @classmethod
-    def get_valid_types(cls: "DataTypeConfig") -> list[str]:
+    def get_valid_types(cls: type[Self]) -> list[str]:
         """Return list of valid internal type names."""
         return [dt["internal_name"] for dt in cls.TYPES]
 

@@ -16,13 +16,16 @@ Including another URLconf
 
 """
 
+
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import path
+from django.urls import URLPattern, URLResolver, path
 from inference.api import api as inference_api
 
-urlpatterns = [
+URLPatternsList = list[URLPattern | URLResolver]
+
+urlpatterns: URLPatternsList = [
     path("admin/", admin.site.urls),
     path("api/", inference_api.urls),
 ]

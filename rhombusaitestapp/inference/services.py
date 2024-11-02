@@ -2,10 +2,9 @@
 
 from typing import ClassVar
 
-from asgiref.sync import sync_to_async
-from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import UploadedFile
 from django.shortcuts import get_object_or_404
+from ninja.errors import HttpError
 
 from .constants import ErrorMessages, ProcessingStatus
 from .models import DataFile
@@ -26,44 +25,40 @@ class FileProcessingService:
     def validate_file(self: "FileProcessingService", file: UploadedFile) -> None:
         """Validate uploaded file."""
         if not file:
-            raise ValidationError("No file was submitted")
+            raise HttpError(400, "No file was submitted")
 
         # Check file size
-        if file.size > self.MAX_FILE_SIZE:
+        if file.size is not None and file.size > self.MAX_FILE_SIZE:
             msg = f"File size cannot exceed {self.MAX_FILE_SIZE // (1024*1024)}MB"
-            raise ValidationError(msg)
+            raise HttpError(400, msg)
 
         # Check if file is empty
         if file.size == 0:
-            raise ValidationError("File is empty")
+            raise HttpError(400, "File is empty")
 
         # Validate content type
         if file.content_type not in self.ALLOWED_CONTENT_TYPES:
             msg = f"Invalid file type. Allowed types are: {', '.join(self.ALLOWED_CONTENT_TYPES)}"
-            raise ValidationError(msg)
+            raise HttpError(400, msg)
 
-    async def handle_upload(self: "FileProcessingService", file: UploadedFile) -> dict:
+    async def handle_upload(
+        self: "FileProcessingService", file: UploadedFile
+    ) -> DataFile:
         """Handle file upload and queue processing."""
-        try:
-            # Validate file first
-            self.validate_file(file)
+        # Validate file
+        self.validate_file(file)
 
-            # Create record asynchronously
-            data_file = await sync_to_async(DataFile.objects.create)(
-                file=file,
-                original_filename=file.name,
-                processing_status=ProcessingStatus.UPLOADING,
-            )
+        # Save file
+        data_file = await DataFile.objects.acreate(
+            file=file,
+            original_filename=file.name,
+            processing_status=ProcessingStatus.UPLOADING.value,
+        )
 
-            # Queue processing (Celery is thread-safe)
-            process_file.delay(data_file.id)
-        except ValidationError as e:
-            msg = f"Upload failed: {e!s}"
-            raise ValueError(msg) from e
-        except Exception as e:
-            msg = f"Upload failed: Unexpected error - {e!s}"
-            raise ValueError(msg) from e
-        return {"file_id": data_file.id, "message": "File uploaded successfully"}
+        # Queue processing task
+        process_file.delay(data_file.id)
+
+        return data_file
 
     def get_status(self: "FileProcessingService", file_id: int) -> DataFile:
         """Get current processing status."""

@@ -3,6 +3,8 @@
 import django.core.validators
 from django.db import migrations, models
 
+from inference.constants import ProcessingStatus
+
 
 class Migration(migrations.Migration):
 
@@ -14,11 +16,36 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="DataFile",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("file", models.FileField(upload_to="uploads/", validators=[django.core.validators.FileExtensionValidator(allowed_extensions=["csv", "xlsx", "xls"])])),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "file",
+                    models.FileField(
+                        upload_to="uploads/",
+                        validators=[
+                            django.core.validators.FileExtensionValidator(
+                                allowed_extensions=["csv", "xlsx", "xls"]
+                            )
+                        ],
+                    ),
+                ),
                 ("original_filename", models.CharField(max_length=255)),
                 ("uploaded_at", models.DateTimeField(auto_now_add=True)),
-                ("processing_status", models.CharField(choices=[("PENDING", "Pending"), ("PROCESSING", "Processing"), ("COMPLETED", "Completed"), ("FAILED", "Failed")], default="PENDING", max_length=20)),
+                (
+                    "processing_status",
+                    models.CharField(
+                        choices=ProcessingStatus.choices,
+                        default=ProcessingStatus.IDLE.value,
+                        max_length=20,
+                    ),
+                ),
                 ("processing_time", models.FloatField(blank=True, null=True)),
                 ("error_message", models.TextField(blank=True, null=True)),
                 ("inferred_types", models.JSONField(blank=True, null=True)),
@@ -31,7 +58,15 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="DataType",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
                 ("internal_name", models.CharField(max_length=50)),
                 ("display_name", models.CharField(max_length=50)),
                 ("description", models.TextField(blank=True)),
