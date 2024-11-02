@@ -364,6 +364,7 @@ files = [
 asgiref = "*"
 django = "*"
 django-stubs-ext = ">=5.1.1"
+mypy = {version = ">=1.12,<1.14", optional = true, markers = "extra == \"compatible-mypy\""}
 types-PyYAML = "*"
 typing-extensions = ">=4.11.0"
 
@@ -1211,4 +1212,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.13"
-content-hash = "4712013f6ae91f9ae0ad8eea998eb2ebe11eab5785f7f8b6701c540e04c4fef8"
+content-hash = "0a4f66831b065d6b11520d482c4ec7f2d0adc7e1ece47a81b62fb6c9ebb069c7"
