@@ -4,4 +4,10 @@
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
+    "python.analysis.extraPaths": [
+        "./rhombusaitestapp"
+    ],
+    "conventionalCommits.scopes": [
+        "inference-backend"
+    ],
 }
