@@ -5,7 +5,7 @@ from typing import Any
 from django.core.validators import FileExtensionValidator
 from django.db import models
 
-from .constants import ProcessingStatus
+from .constants import DataTypeConfig, ProcessingStatus
 
 
 class DataType(models.Model):
@@ -58,3 +58,30 @@ class DataFile(models.Model):
         if self.overridden_types:
             effective_types.update(self.overridden_types)
         return effective_types
+
+    def validate_column_type(
+        self: "DataFile",
+        column_name: str,
+        custom_type: str,
+    ) -> None:
+        """Validate column type override."""
+        if not self.inferred_types or column_name not in self.inferred_types:
+            raise ValueError(f"Column '{column_name}' not found")
+
+        if not DataTypeConfig.is_valid_type(custom_type):
+            raise ValueError(
+                f"Invalid type '{custom_type}'. Must be a string starting with a letter."
+            )
+
+    def override_column_type(
+        self: "DataFile",
+        column_name: str,
+        custom_type: str,
+    ) -> None:
+        """Override the data type for a column."""
+        self.validate_column_type(column_name, custom_type)
+
+        overridden_types = self.overridden_types or {}
+        overridden_types[column_name] = custom_type
+        self.overridden_types = overridden_types
+        self.save()
