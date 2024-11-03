@@ -1,24 +1,17 @@
 """API for the Inference app."""
 
 from django.http import HttpRequest
-from ninja import NinjaAPI, Schema, UploadedFile
+from ninja import NinjaAPI, UploadedFile
 from ninja.errors import HttpError
 from ninja.responses import Response
 
 from .models import DataFile
-from .schemas import DataFileResponseSchema
+from .schemas import DataFileResponseSchema, FileUploadResponseSchema
 from .services import FileProcessingService
 
 # Initialize API
 api = NinjaAPI(urls_namespace="inference_api", version="1.0.0")
 service = FileProcessingService()
-
-
-class FileUploadResponseSchema(Schema):
-    """File upload response schema."""
-
-    file_id: int
-    message: str
 
 
 @api.post("/upload", response={201: FileUploadResponseSchema})
