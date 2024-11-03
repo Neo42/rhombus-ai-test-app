@@ -32,6 +32,8 @@ class DataFileResponseSchema(Schema):
     processing_time: float | None
     error_message: str | None
     inferred_types: dict[str, str] | None
+    overridden_types: dict[str, str] | None
+    effective_types: dict[str, str] | None
     row_count: int | None
     column_count: int | None
     sample_data: list[dict[str, Any]] | None
@@ -40,8 +42,15 @@ class DataFileResponseSchema(Schema):
 class DataTypeOverrideSchema(Schema):
     """Schema for overriding column data types."""
 
+    custom_type: str
+
+
+class DataTypeOverrideResponseSchema(Schema):
+    """Schema for data type override response."""
+
     column_name: str
-    new_type: str
+    original_type: str
+    custom_type: str
 
 
 class FileUploadResponseSchema(Schema):
@@ -49,3 +58,11 @@ class FileUploadResponseSchema(Schema):
 
     file_id: int
     message: str = "File uploaded successfully"
+
+
+class ErrorResponseSchema(Schema):
+    """Schema for error response."""
+
+    message: str
+    code: str
+    detail: str | None = None

@@ -69,8 +69,6 @@ class CacheConfig:
 class DataTypeConfig:
     """Configuration for data type inference."""
 
-    MAX_SAMPLE_VALUES = 5
-
     TYPES: ClassVar[list[dict[str, str]]] = [
         {
             "internal_name": "object",
@@ -115,9 +113,17 @@ class DataTypeConfig:
     ]
 
     @classmethod
-    def get_valid_types(cls: type[Self]) -> list[str]:
-        """Return list of valid internal type names."""
-        return [dt["internal_name"] for dt in cls.TYPES]
+    def is_valid_type(cls: type[Self], type_name: str) -> bool:
+        """Check if type name is valid by checking if it starts with a string.
+
+        Args:
+            type_name: The type name to validate
+
+        Returns:
+            bool: True if type name starts with a string
+
+        """
+        return isinstance(type_name, str) and bool(type_name.strip())
 
 
 class ErrorMessages:
@@ -126,3 +132,28 @@ class ErrorMessages:
     FILE_NOT_READY_FOR_PREVIEW = "File is not ready for preview"
     FILE_NOT_READY_FOR_INFERENCE = "File is not ready for inference"
     INFERENCE_FAILED = "Inference failed"
+
+
+class ErrorCodes:
+    """Error codes for API responses."""
+
+    # Validation errors
+    VALIDATION_ERROR = "VALIDATION_ERROR"
+    INVALID_FILE_TYPE = "INVALID_FILE_TYPE"
+    FILE_TOO_LARGE = "FILE_TOO_LARGE"
+    FILE_EMPTY = "FILE_EMPTY"
+
+    # Not found errors
+    FILE_NOT_FOUND = "FILE_NOT_FOUND"
+    COLUMN_NOT_FOUND = "COLUMN_NOT_FOUND"
+
+    # Processing errors
+    PROCESSING_INCOMPLETE = "PROCESSING_INCOMPLETE"
+    PROCESSING_FAILED = "PROCESSING_FAILED"
+
+    # Type errors
+    INVALID_COLUMN_TYPE = "INVALID_COLUMN_TYPE"
+
+    # Generic errors
+    INTERNAL_ERROR = "INTERNAL_ERROR"
+    UNKNOWN_ERROR = "UNKNOWN_ERROR"
