@@ -48,3 +48,4 @@ rhombusaitestapp/tmp/
 .coverage
 htmlcov/
 .pytest_cache/
+dump.rdb
