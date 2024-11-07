@@ -45,9 +45,7 @@ class InferenceEngine:
         mapping.update({str(val).lower(): False for val in false_values})
         return mapping
 
-    def infer(
-        self: "InferenceEngine", file_path: str, sample_size: int = 1000
-    ) -> tuple[pd.DataFrame, float]:
+    def infer(self: "InferenceEngine", file_path: str, sample_size: int = 1000) -> tuple[pd.DataFrame, float]:
         """Infer and convert data types from CSV or Excel files."""
         start_time = time.time()
 
@@ -61,9 +59,7 @@ class InferenceEngine:
 
                 if df[col].dtype == "object":
                     df[col] = df[col].astype(str).str.strip()
-                    df[col], inferred_dtypes[col] = self._infer_column_type(
-                        df[col], boolean_mapping, sample_size
-                    )
+                    df[col], inferred_dtypes[col] = self._infer_column_type(df[col], boolean_mapping, sample_size)
 
             processing_time = time.time() - start_time
 
@@ -104,9 +100,9 @@ class InferenceEngine:
         """Read file and convert to pandas DataFrame."""
         file_extension = Path(file_path).suffix.lower()
         if file_extension == ".csv":
-            polars_df = pl.read_csv(file_path)
+            polars_df = pl.read_csv(file_path, raise_if_empty=False)
         elif file_extension in [".xlsx", ".xls"]:
-            polars_df = pl.read_excel(file_path)
+            polars_df = pl.read_excel(file_path, raise_if_empty=False)
         else:
             msg = f"Unsupported file format: {file_extension}"
             raise ValueError(msg)
@@ -120,29 +116,18 @@ class InferenceEngine:
             return series.str.lower().map(boolean_mapping).astype("bool"), "bool"
         return series, None
 
-    def _infer_complex(
-        self: "InferenceEngine", series: pd.Series
-    ) -> tuple[pd.Series, str | None]:
+    def _infer_complex(self: "InferenceEngine", series: pd.Series) -> tuple[pd.Series, str | None]:
         """Infer complex number data type."""
         complex_match = series.apply(
-            lambda x: isinstance(x, str)
-            and re.match(r"^\(?-?\d+(\.\d+)?[+-]\d+(\.\d+)?j\)?$", x)
+            lambda x: isinstance(x, str) and re.match(r"^\(?-?\d+(\.\d+)?[+-]\d+(\.\d+)?j\)?$", x)
         )
         if complex_match.any():
-            series = series.apply(
-                lambda x: (
-                    complex(x)
-                    if isinstance(x, str) and ("+" in x or "-" in x)
-                    else np.nan
-                )
-            )
+            series = series.apply(lambda x: (complex(x) if isinstance(x, str) and ("+" in x or "-" in x) else np.nan))
             if series.apply(lambda x: isinstance(x, complex)).any():
                 return series, "complex128"
         return series, None
 
-    def _infer_numeric(
-        self: "InferenceEngine", series: pd.Series
-    ) -> tuple[pd.Series, str | None]:
+    def _infer_numeric(self: "InferenceEngine", series: pd.Series) -> tuple[pd.Series, str | None]:
         """Infer numeric data type."""
         numeric_col = pd.to_numeric(series, errors="coerce")
         if numeric_col.notna().sum() > 0:
@@ -157,21 +142,13 @@ class InferenceEngine:
         sample_size: int,
     ) -> tuple[pd.Series, str | None]:
         """Infer datetime data type."""
-        sample = (
-            series.dropna()
-            .astype(str)
-            .sample(n=min(sample_size, len(series.dropna())), random_state=1)
-        )
-        date_matches = sample.apply(
-            lambda x: any(re.match(pattern, str(x)) for pattern in date_patterns)
-        )
+        sample = series.dropna().astype(str).sample(n=min(sample_size, len(series.dropna())), random_state=1)
+        date_matches = sample.apply(lambda x: any(re.match(pattern, str(x)) for pattern in date_patterns))
         if date_matches.mean() > 0.5:
             try:
                 # Convert to datetime using Polars first for better performance
                 temp_df = pl.from_pandas(pd.DataFrame({series.name: series}))
-                temp_df = temp_df.with_columns(
-                    pl.col(series.name).str.to_datetime(format=None, strict=False)
-                )
+                temp_df = temp_df.with_columns(pl.col(series.name).str.to_datetime(format=None, strict=False))
                 series = temp_df[series.name].to_pandas()
 
                 # Fallback to pandas if needed
@@ -198,19 +175,13 @@ class InferenceEngine:
         if (
             series.dropna()
             .astype(str)
-            .apply(
-                lambda x: any(
-                    re.match(p, x.strip().lower()) for p in timedelta_patterns
-                )
-            )
+            .apply(lambda x: any(re.match(p, x.strip().lower()) for p in timedelta_patterns))
             .any()
         ):
             return series.apply(self._parse_timedelta), "timedelta64[ns]"
         return series, None
 
-    def _infer_categorical(
-        self: "InferenceEngine", series: pd.Series
-    ) -> tuple[pd.Series, str]:
+    def _infer_categorical(self: "InferenceEngine", series: pd.Series) -> tuple[pd.Series, str]:
         """Infer categorical or object data type."""
         unique_ratio = series.nunique(dropna=True) / len(series)
         if unique_ratio < 0.5:
@@ -222,11 +193,7 @@ class InferenceEngine:
         days_match = re.search(r"([-]?\d+)\s*days?", value)
         time_match = re.search(r"(\d{1,2}):(\d{2})(:\d{2}(\.\d+)?)?", value)
 
-        days = (
-            pd.Timedelta(days=int(days_match.group(1)))
-            if days_match
-            else pd.Timedelta(0)
-        )
+        days = pd.Timedelta(days=int(days_match.group(1))) if days_match else pd.Timedelta(0)
         if time_match:
             hours = int(time_match.group(1))
             minutes = int(time_match.group(2))

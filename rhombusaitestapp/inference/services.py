@@ -46,9 +46,7 @@ class FileProcessingService:
             msg = f"Invalid file type. Allowed types are: {', '.join(self.ALLOWED_CONTENT_TYPES)}"
             raise HttpError(400, msg)
 
-    async def handle_upload(
-        self: "FileProcessingService", file: UploadedFile
-    ) -> DataFile:
+    async def handle_upload(self: "FileProcessingService", file: UploadedFile) -> DataFile:
         """Handle file upload and queue processing."""
         # Validate file
         self.validate_file(file)
@@ -98,17 +96,13 @@ class FileProcessingService:
 
         # Business logic validations
         if data_file.processing_status != ProcessingStatus.INFERRED:
-            raise FileNotProcessedError(
-                "File must be processed before overriding column types"
-            )
+            raise FileNotProcessedError("File must be processed before overriding column types")
 
         if not data_file.inferred_types or column_name not in data_file.inferred_types:
             raise ColumnNotFoundError(f"Column '{column_name}' not found")
 
         if not DataTypeConfig.is_valid_type(custom_type):
-            raise InvalidColumnTypeError(
-                "Invalid type. Must be a string starting with a letter."
-            )
+            raise InvalidColumnTypeError("Invalid type. Must be a string starting with a letter.")
 
         # Update type if validations pass
         data_file.override_column_type(column_name, custom_type)

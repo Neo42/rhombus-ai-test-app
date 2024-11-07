@@ -69,9 +69,7 @@ class DataFile(models.Model):
             raise ValueError(f"Column '{column_name}' not found")
 
         if not DataTypeConfig.is_valid_type(custom_type):
-            raise ValueError(
-                f"Invalid type '{custom_type}'. Must be a string starting with a letter."
-            )
+            raise ValueError(f"Invalid type '{custom_type}'. Must be a string starting with a letter.")
 
     def override_column_type(
         self: "DataFile",

@@ -24,9 +24,7 @@ class TestFileUploadAPI:
     @pytest.mark.asyncio
     async def test_invalid_file_upload(self, async_client: AsyncClient):
         """Test upload with invalid file type"""
-        invalid_file = SimpleUploadedFile(
-            "test.txt", b"invalid content", content_type="text/plain"
-        )
+        invalid_file = SimpleUploadedFile("test.txt", b"invalid content", content_type="text/plain")
 
         response = await async_client.post("/api/upload", {"file": invalid_file})
 

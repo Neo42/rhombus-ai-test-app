@@ -47,21 +47,15 @@ async def upload_file(
     """Upload and queue file for processing."""
     try:
         result = await service.handle_upload(file)
-        return Response(
-            {"file_id": result.id, "message": "File uploaded successfully"}, status=201
-        )
+        return Response({"file_id": result.id, "message": "File uploaded successfully"}, status=201)
     except FileValidationError as exc:
-        logger.warning(
-            "File validation failed: %s", str(exc), extra={"file": file.name}
-        )
+        logger.warning("File validation failed: %s", str(exc), extra={"file": file.name})
         raise HttpError(400, f"{ErrorCodes.VALIDATION_ERROR}: {exc!s}") from exc
     except HttpError:
         raise
     except Exception as exc:
         logger.exception("Unexpected error during file upload")
-        raise HttpError(
-            500, f"{ErrorCodes.INTERNAL_ERROR}: Internal server error"
-        ) from exc
+        raise HttpError(500, f"{ErrorCodes.INTERNAL_ERROR}: Internal server error") from exc
 
 
 @api.get(
@@ -95,9 +89,7 @@ def get_file_status(request: HttpRequest, file_id: int) -> dict:
         raise HttpError(404, f"{ErrorCodes.FILE_NOT_FOUND}: File not found") from exc
     except Exception as exc:
         logger.exception("Unexpected error retrieving file status")
-        raise HttpError(
-            500, f"{ErrorCodes.INTERNAL_ERROR}: Internal server error"
-        ) from exc
+        raise HttpError(500, f"{ErrorCodes.INTERNAL_ERROR}: Internal server error") from exc
 
 
 @api.patch(
@@ -141,6 +133,4 @@ def update_column_type(
         raise HttpError(404, f"{ErrorCodes.FILE_NOT_FOUND}: File not found") from exc
     except Exception as exc:
         logger.exception("Unexpected error updating column type")
-        raise HttpError(
-            500, f"{ErrorCodes.INTERNAL_ERROR}: Internal server error"
-        ) from exc
+        raise HttpError(500, f"{ErrorCodes.INTERNAL_ERROR}: Internal server error") from exc

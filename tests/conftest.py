@@ -14,9 +14,7 @@ pytest_plugins = ["pytest_asyncio"]
 @pytest.fixture
 def csv_file() -> SimpleUploadedFile:
     """Fixture for test CSV file"""
-    return SimpleUploadedFile(
-        "test.csv", b"col1,col2\n1,2\n3,4", content_type="text/csv"
-    )
+    return SimpleUploadedFile("test.csv", b"col1,col2\n1,2\n3,4", content_type="text/csv")
 
 
 @pytest.fixture
