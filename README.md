@@ -20,7 +20,6 @@ A Django-based REST API for automatic data type inference from CSV and Excel fil
 - Pylint & Ruff (Linter + Formatter)
 - Mypy (Static type checking)
 - Pytest (Testing framework)
-- GitHub Actions (CI/CD)
 
 ## Features
 
@@ -44,6 +43,12 @@ A Django-based REST API for automatic data type inference from CSV and Excel fil
   - Complex Number
 - Configurable sample size for type inference
 - Handles missing values and data cleaning
+
+## Next Step
+
+- Improve data processing speed for large files (potentially using Polars instead of Pandas)
+- Get all data instead of preview data
+- Fix Github Actions
 
 ## Project Structure
 
