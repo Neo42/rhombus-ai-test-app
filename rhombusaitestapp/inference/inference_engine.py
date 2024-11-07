@@ -131,8 +131,10 @@ class InferenceEngine:
         """Infer numeric data type."""
         numeric_col = pd.to_numeric(series, errors="coerce")
         if numeric_col.notna().sum() > 0:
-            dtype = "float64" if numeric_col.hasnans else "int64"
-            return numeric_col, dtype
+            # Check if all non-NaN values are integers
+            if (numeric_col.dropna() % 1 == 0).all():
+                return numeric_col.astype("Int64"), "Int64"
+            return numeric_col, "Float64"
         return series, None
 
     def _infer_datetime(
@@ -186,7 +188,7 @@ class InferenceEngine:
         unique_ratio = series.nunique(dropna=True) / len(series)
         if unique_ratio < 0.5:
             return series.astype("category"), "category"
-        return series.astype("object"), "object"
+        return series.astype("string"), "string"
 
     def _parse_timedelta(self: "InferenceEngine", value: str) -> pd.Timedelta:
         """Parse a timedelta string in formats like '-428 days +19:23:03.487674'."""
