@@ -154,7 +154,7 @@ poetry run ruff format
 ### File Upload
 
 ```http
-POST /api/inference/upload
+POST /api/upload
 ```
 
 - Accepts CSV and Excel files
@@ -163,7 +163,7 @@ POST /api/inference/upload
 ### Get File Status
 
 ```http
-GET /api/inference/files/{file_id}
+GET /api/files/{file_id}
 ```
 
 - Returns processing status and inferred data types
@@ -172,7 +172,7 @@ GET /api/inference/files/{file_id}
 ### Override Column Type
 
 ```http
-PATCH /api/inference/files/{file_id}/columns/{column_name}
+PATCH /api/files/{file_id}/columns/{column_name}
 ```
 
 - Override inferred data type for specific column
