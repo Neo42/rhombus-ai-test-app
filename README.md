@@ -102,20 +102,20 @@ poetry install
 3. Apply migrations:
 
 ```bash
+# make sure you are in the root directory
+cd rhombusaitestapp
 poetry run python manage.py migrate
 ```
 
 4. Start Celery worker:
 
 ```bash
-cd rhombusaitestapp
 poetry run celery -A rhombusaitestapp worker --loglevel=info
 ```
 
 5. Run development server:
 
 ```bash
-# make sure you are in the root directory
 poetry run python manage.py runserver
 ```
 
